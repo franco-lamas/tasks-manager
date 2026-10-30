@@ -1,6 +1,6 @@
 # ODD Feature: Board auto-refresh
 
-**Status:** Implemented and verified; fork issue #3 created, awaiting maintainer approval before PR
+**Status:** PR #4 open against `main` in `franco-lamas/tasks-manager`; awaiting CI/review
 **Branch:** `feat/board-auto-refresh`
 **Scope:** GUI task synchronization only; MCP contracts stay unchanged.
 
@@ -32,4 +32,5 @@
 - **L9:** SYNC-05 smoke: a clean Docker image and seeded isolated PostgreSQL volume served the GUI on port 3002. Chromium observed external SQL mutations reflected after the polling interval in the board, calendar, and task-detail input. Test data was restored and temporary containers/volumes were removed.
 - **L10:** SYNC-06: `78443a1` is the reviewable implementation commit (208 authored changed lines). No source, schema, MCP contract, environment, or Compose changes were made.
 - **L11:** “Perfecto, Avanza con el cierre en mi fork, incluyendo el cierre de ODD”
-- **L12:** Created fork issue #3 (`feat: auto-refresh task board from external updates`) with `enhancement`; read-back confirmed. The protected `status:approved` label is not applied yet; the PR remains gated on maintainer approval.
+- **L12:** Created fork issue #3 (`feat: auto-refresh task board from external updates`) with `enhancement`; read-back confirmed. The maintainer later applied `status:approved`.
+- **L13:** Created PR #4 against fork `main`, linked with `Refs #3` and labeled `type:feature`; read-back confirms it is OPEN. GitHub currently reports no checks for the branch. Upstream PR remains a later delivery step after this fork PR is merged.
