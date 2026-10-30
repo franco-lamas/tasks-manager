@@ -1,6 +1,6 @@
 # ODD Feature: Board auto-refresh
 
-**Status:** Implemented; review and work-unit commit pending
+**Status:** Implemented and verified locally; work-unit commit `78443a1`
 **Branch:** `feat/board-auto-refresh`
 **Scope:** GUI task synchronization only; MCP contracts stay unchanged.
 
@@ -17,7 +17,7 @@
 - [x] `SYNC-03` — Add a read-only task snapshot boundary and reconciliation helpers without changing MCP. Route: implementation. Evidence: `getTaskSnapshotAction` and pure reconciliation helper pass 6 sync tests. Commit: —
 - [x] `SYNC-04` — Add visible-tab polling to `TasksProvider`, defer external snapshots during local writes, and expose passive sync state. Route: implementation. Evidence: 5-second visible-tab polling, deferred latest snapshot, silent failures, and localized stale indicator; focused tests/type-check pass. Commit: —
 - [x] `SYNC-05` — Verify board, task detail, and calendar update from an external task mutation without clobbering local optimistic work. Route: verification. Evidence: Chromium against an isolated Docker image/BDD observed a direct external task mutation in board, calendar, and task-detail UI after polling; 6 pure reconciliation tests cover deferred snapshots and preservation of a local optimistic mutation without a remote snapshot. Commit: —
-- [ ] `SYNC-06` — Review the diff, record evidence, and prepare a reviewable work-unit commit. Route: closure. Commit: —
+- [x] `SYNC-06` — Review the diff, record evidence, and prepare a reviewable work-unit commit. Route: closure. Evidence: 208 authored changed lines; focused/unit, i18n, type-check, diff, and isolated Docker/Chromium smoke passed. Commit: `78443a1`.
 
 ## Log
 
@@ -30,3 +30,4 @@
 - **L7:** SYNC-02 RED observed: `npm run test:sync` fails with `Cannot find module '../../lib/tasks-sync.js'` until the production helper is added.
 - **L8:** SYNC-03/04 GREEN: `npm run test:sync` passes 6/6; `npm run test:i18n` passes 14/14; `npx tsc --noEmit` and `git diff --check` pass. A first implementation regression that would have replaced a successful optimistic mutation with the initial snapshot was caught and corrected before functional verification.
 - **L9:** SYNC-05 smoke: a clean Docker image and seeded isolated PostgreSQL volume served the GUI on port 3002. Chromium observed external SQL mutations reflected after the polling interval in the board, calendar, and task-detail input. Test data was restored and temporary containers/volumes were removed.
+- **L10:** SYNC-06: `78443a1` is the reviewable implementation commit (208 authored changed lines). No source, schema, MCP contract, environment, or Compose changes were made.
