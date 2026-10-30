@@ -1,6 +1,6 @@
 # ODD Feature: Board auto-refresh
 
-**Status:** Implemented and verified locally; work-unit commit `78443a1`
+**Status:** Implemented and verified; fork issue #3 created, awaiting maintainer approval before PR
 **Branch:** `feat/board-auto-refresh`
 **Scope:** GUI task synchronization only; MCP contracts stay unchanged.
 
@@ -31,3 +31,5 @@
 - **L8:** SYNC-03/04 GREEN: `npm run test:sync` passes 6/6; `npm run test:i18n` passes 14/14; `npx tsc --noEmit` and `git diff --check` pass. A first implementation regression that would have replaced a successful optimistic mutation with the initial snapshot was caught and corrected before functional verification.
 - **L9:** SYNC-05 smoke: a clean Docker image and seeded isolated PostgreSQL volume served the GUI on port 3002. Chromium observed external SQL mutations reflected after the polling interval in the board, calendar, and task-detail input. Test data was restored and temporary containers/volumes were removed.
 - **L10:** SYNC-06: `78443a1` is the reviewable implementation commit (208 authored changed lines). No source, schema, MCP contract, environment, or Compose changes were made.
+- **L11:** “Perfecto, Avanza con el cierre en mi fork, incluyendo el cierre de ODD”
+- **L12:** Created fork issue #3 (`feat: auto-refresh task board from external updates`) with `enhancement`; read-back confirmed. The protected `status:approved` label is not applied yet; the PR remains gated on maintainer approval.
