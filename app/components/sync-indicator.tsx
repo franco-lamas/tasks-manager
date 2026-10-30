@@ -3,6 +3,7 @@
 import { useSync, type SyncStatus } from "@/lib/sync-context";
 import type { Locale } from "@/lib/i18n/locale";
 import { shellText } from "@/lib/i18n/shell";
+import { useTasks } from "@/lib/tasks-context";
 
 const svg = (children: React.ReactNode, extraClass = "") => (
   <svg
@@ -79,8 +80,10 @@ const config: Record<
  */
 export function SyncIndicator({ locale }: { locale: Locale }) {
   const { status } = useSync();
+  const { stale } = useTasks();
   const { text, className, icon } = config[status];
-  const label = shellText(locale, text);
+  const label = shellText(locale, stale ? "syncStale" : text);
+  if (stale) return <div role="status" aria-live="polite" aria-label={label} title={label} className="flex shrink-0 items-center text-muted">{svg(<><path d="M12 9v4M12 17h.01" /><circle cx="12" cy="12" r="9" /></>)}</div>;
 
   return (
     <div

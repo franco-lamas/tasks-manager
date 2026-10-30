@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { Task } from "./types";
 import { useToast } from "./toast-context";
 import { useSync } from "./sync-context";
@@ -12,7 +12,9 @@ import {
   restoreTaskAction,
   softDeleteTaskAction,
   updateTaskAction,
+  getTaskSnapshotAction,
 } from "@/app/actions/tasks";
+import { createTaskSyncState, finishTaskMutation, receiveTaskSnapshot, recordPollingFailure, recordPollingSuccess, type TaskSyncState } from "./tasks-sync";
 
 type TasksContextValue = {
   /** Tâches actives (hors corbeille). */
@@ -31,6 +33,7 @@ type TasksContextValue = {
   purgeTask: (id: string) => void;
   /** Remplace l'ordre complet (drag & drop) + persiste positions/statuts. */
   reorderTasks: (next: Task[]) => void;
+  stale: boolean;
 };
 
 const TasksContext = createContext<TasksContextValue | null>(null);
@@ -62,6 +65,9 @@ export function TasksProvider({
   const locale = useLocale();
   const message = (fr: string, es: string) => locale === "es" ? es : fr;
   const sync = useSync();
+  const [syncState, setSyncState] = useState<TaskSyncState>(() => ({ ...createTaskSyncState(), active: initialTasks, trashed: initialTrashedTasks }));
+  const syncStateRef = useRef(syncState);
+  const updateSyncState = (next: TaskSyncState) => { syncStateRef.current = next; setSyncState(next); };
 
   const tasks = useMemo(() => allTasks.filter((t) => !t.deletedAt), [allTasks]);
   const trashedTasks = useMemo(
@@ -72,12 +78,38 @@ export function TasksProvider({
     [allTasks],
   );
 
-  // Persiste une mutation ; en cas d'échec, restaure l'état précédent + toast.
+  useEffect(() => {
+    let active = true;
+    const poll = async () => {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const snapshot = await getTaskSnapshotAction();
+        if (!active) return;
+        updateSyncState(recordPollingSuccess(receiveTaskSnapshot(syncStateRef.current, snapshot)));
+        const state = syncStateRef.current;
+        if (state.pendingMutations === 0 && !state.deferredSnapshot) setAllTasks([...state.active, ...state.trashed]);
+      } catch {
+        if (active) updateSyncState(recordPollingFailure(syncStateRef.current));
+      }
+    };
+    const becameVisible = () => { if (document.visibilityState === "visible") void poll(); };
+    if (document.visibilityState === "visible") void poll();
+    const timer = window.setInterval(() => { if (document.visibilityState === "visible") void poll(); }, 5000);
+    document.addEventListener("visibilitychange", becameVisible);
+    return () => { active = false; window.clearInterval(timer); document.removeEventListener("visibilitychange", becameVisible); };
+  }, []);
+
+  // Writes remain tracked; external snapshots wait until the final optimistic write settles.
   const persist = (run: Promise<unknown>, snapshot: Task[], errMsg: string) => {
+    updateSyncState({ ...syncStateRef.current, pendingMutations: syncStateRef.current.pendingMutations + 1 });
     sync.track(run).catch((e) => {
       console.error(e);
       setAllTasks(snapshot);
       toast.error(errMsg);
+    }).finally(() => {
+      const { state: next, snapshotApplied } = finishTaskMutation(syncStateRef.current);
+      updateSyncState(next);
+      if (snapshotApplied) setAllTasks([...next.active, ...next.trashed]);
     });
   };
 
@@ -176,6 +208,7 @@ export function TasksProvider({
         restoreTask,
         purgeTask,
         reorderTasks,
+        stale: syncState.stale,
       }}
     >
       {children}
