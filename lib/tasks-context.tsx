@@ -4,6 +4,7 @@ import { createContext, useContext, useMemo, useState } from "react";
 import type { Task } from "./types";
 import { useToast } from "./toast-context";
 import { useSync } from "./sync-context";
+import { useLocale } from "./i18n/task-ui";
 import {
   createTaskAction,
   purgeTaskAction,
@@ -58,6 +59,8 @@ export function TasksProvider({
     ...initialTrashedTasks,
   ]);
   const toast = useToast();
+  const locale = useLocale();
+  const message = (fr: string, es: string) => locale === "es" ? es : fr;
   const sync = useSync();
 
   const tasks = useMemo(() => allTasks.filter((t) => !t.deletedAt), [allTasks]);
@@ -91,9 +94,9 @@ export function TasksProvider({
         dueDate: task.dueDate,
         tagIds: task.tagIds,
         notes: task.notes,
-      }).then(() => toast.success("Tâche ajoutée")),
+      }).then(() => toast.success(message("Tâche ajoutée", "Tarea añadida"))),
       snapshot,
-      "Impossible d'ajouter la tâche",
+      message("Impossible d'ajouter la tâche", "No se pudo añadir la tarea"),
     );
   };
 
@@ -105,7 +108,7 @@ export function TasksProvider({
         if (successMsg) toast.success(successMsg);
       }),
       snapshot,
-      "Impossible d'enregistrer la modification",
+      message("Impossible d'enregistrer la modification", "No se pudo guardar el cambio"),
     );
   };
 
@@ -115,13 +118,13 @@ export function TasksProvider({
     setAllTasks(allTasks.map((t) => (t.id === id ? { ...t, deletedAt } : t)));
     persist(
       softDeleteTaskAction(id).then(() =>
-        toast.success("Tâche déplacée dans la corbeille", {
-          label: "Annuler",
+        toast.success(message("Tâche déplacée dans la corbeille", "Tarea movida a la papelera"), {
+          label: message("Annuler", "Deshacer"),
           onClick: () => restoreTask(id),
         }),
       ),
       snapshot,
-      "Impossible de supprimer la tâche",
+      message("Impossible de supprimer la tâche", "No se pudo eliminar la tarea"),
     );
   };
 
@@ -133,9 +136,9 @@ export function TasksProvider({
       prev.map((t) => (t.id === id ? { ...t, deletedAt: null } : t)),
     );
     persist(
-      restoreTaskAction(id).then(() => toast.success("Tâche restaurée")),
+      restoreTaskAction(id).then(() => toast.success(message("Tâche restaurée", "Tarea restaurada"))),
       snapshot,
-      "Impossible de restaurer la tâche",
+      message("Impossible de restaurer la tâche", "No se pudo restaurar la tarea"),
     );
   };
 
@@ -143,9 +146,9 @@ export function TasksProvider({
     const snapshot = allTasks;
     setAllTasks(allTasks.filter((t) => t.id !== id));
     persist(
-      purgeTaskAction(id).then(() => toast.success("Supprimée définitivement")),
+      purgeTaskAction(id).then(() => toast.success(message("Supprimée définitivement", "Eliminada definitivamente"))),
       snapshot,
-      "Impossible de supprimer définitivement la tâche",
+      message("Impossible de supprimer définitivement la tâche", "No se pudo eliminar la tarea definitivamente"),
     );
   };
 
@@ -158,7 +161,7 @@ export function TasksProvider({
         next.map((t, i) => ({ id: t.id, status: t.status, position: i })),
       ),
       snapshot,
-      "Impossible de réordonner les tâches",
+      message("Impossible de réordonner les tâches", "No se pudo reordenar las tareas"),
     );
   };
 
