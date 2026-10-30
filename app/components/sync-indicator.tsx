@@ -1,6 +1,8 @@
 "use client";
 
 import { useSync, type SyncStatus } from "@/lib/sync-context";
+import type { Locale } from "@/lib/i18n/locale";
+import { shellText } from "@/lib/i18n/shell";
 
 const svg = (children: React.ReactNode, extraClass = "") => (
   <svg
@@ -21,10 +23,10 @@ const svg = (children: React.ReactNode, extraClass = "") => (
 
 const config: Record<
   SyncStatus,
-  { label: string; className: string; icon: React.ReactNode }
+  { text: "syncIdle" | "syncWorking" | "syncError"; className: string; icon: React.ReactNode }
 > = {
   idle: {
-    label: "Synchronisé",
+    text: "syncIdle",
     className: "text-muted",
     // Nuage avec check.
     icon: svg(
@@ -35,7 +37,7 @@ const config: Record<
     ),
   },
   syncing: {
-    label: "Synchronisation…",
+    text: "syncWorking",
     className: "text-accent",
     // Flèches circulaires qui tournent.
     icon: svg(
@@ -48,7 +50,7 @@ const config: Record<
     ),
   },
   saved: {
-    label: "Synchronisé",
+    text: "syncIdle",
     className: "text-tag-green-text",
     icon: svg(
       <>
@@ -58,7 +60,7 @@ const config: Record<
     ),
   },
   error: {
-    label: "Échec de synchro",
+    text: "syncError",
     className: "text-tag-red-text",
     // Nuage barré.
     icon: svg(
@@ -75,9 +77,10 @@ const config: Record<
  * l'état agrégé des mutations (voir `SyncProvider`) : au repos « Synchronisé »,
  * en écriture une icône qui tourne, un flash vert au succès, rouge en cas d'échec.
  */
-export function SyncIndicator() {
+export function SyncIndicator({ locale }: { locale: Locale }) {
   const { status } = useSync();
-  const { label, className, icon } = config[status];
+  const { text, className, icon } = config[status];
+  const label = shellText(locale, text);
 
   return (
     <div
